@@ -1,0 +1,40 @@
+import pandas as pd
+import os
+
+def process_data():
+    # Load the biopics data
+    file_path = os.path.join(os.getcwd(), "biopics.csv")
+    biopics = pd.read_csv(file_path, encoding="utf-8")
+    
+    # Filter out duplicate rows
+    biopics.drop_duplicates(inplace=True)
+    
+    # Rename the variable called box_office to 'earning'
+    biopics = biopics.rename(columns={"box_office": "earning"})
+    
+    # Filter out rows for which earnings are missing (i.e they are NaN)
+    biopics.dropna(subset=["earning"], inplace=True)
+    
+    # Keep only movies released in the year 1990 or later
+    biopics = biopics[biopics["year_release"] >= 1990]
+    
+    # Convert the type of 'type_of_subject and 'country' to categorical
+    biopics["type_of_subject"] = biopics["type_of_subject"].astype("category")
+    biopics["country"] = biopics["country"].astype("category")
+    
+    # Create a new variable called 'lead_actor_actress_known' that is false if 'lead_actor_actress' is NaN and true otherwise
+    biopics["lead_actor_actress_known"] = biopics["lead_actor_actress"].notna()
+    
+    # Update earnings such they are expressed in millions of dollars instead of dollars
+    biopics["earning"] = biopics["earning"] / 1000000
+    
+    # Reorder the columns in the data frame
+    biopics = biopics[["title", "year_release", "earning", "country", "type_of_subject", "lead_actor_actress", "lead_actor_actress_known"]]
+    
+    # Sort the rows in descending order of earnings
+    biopics.sort_values(by="earning", ascending=False, inplace=True)
+    
+    # Reset the index
+    biopics.reset_index(drop=True, inplace=True)
+    
+    return biopics
